@@ -1,0 +1,5 @@
+app_name: Luna IA Local
+version: 0.1.0
+history_limit: 12
+memory_limit: 6
+

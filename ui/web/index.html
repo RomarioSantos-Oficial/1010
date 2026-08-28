@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Luna IA Local</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="shell">
+    <aside>
+      <div class="orb"><span>L</span></div>
+      <h1>Luna</h1>
+      <p class="sub">Personagem virtual de IA</p>
+      <div class="status"><i></i><span id="status">Conectando…</span></div>
+      <section>
+        <small>Privacidade</small>
+        <p>Conversas e preferências ficam neste computador.</p>
+        <button id="forget" class="secondary">Apagar minha memória</button>
+      </section>
+    </aside>
+    <section class="chat">
+      <header><div><strong>Conversa local</strong><small id="provider"></small></div><span class="badge">V0.1</span></header>
+      <div id="messages" class="messages" aria-live="polite">
+        <article class="assistant">Oi! Eu sou Luna, uma personagem virtual de IA. Como posso ajudar?</article>
+      </div>
+      <form id="form">
+        <textarea id="input" rows="1" maxlength="4000" placeholder="Digite uma mensagem…" required></textarea>
+        <button type="submit" aria-label="Enviar">➜</button>
+      </form>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
+
