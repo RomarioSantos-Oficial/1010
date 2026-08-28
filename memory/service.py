@@ -1,22 +1,20 @@
-import re
-
+from .memory_candidate import MemoryCandidateExtractor
+from .semantic_memory import SemanticMemory
 from .sqlite_store import SQLiteStore
 
 
 class MemoryService:
-    def __init__(self, store: SQLiteStore):
+    def __init__(self, store: SQLiteStore, semantic: SemanticMemory, extractor: MemoryCandidateExtractor | None = None):
         self.store = store
+        self.semantic = semantic
+        self.extractor = extractor or MemoryCandidateExtractor()
 
-    def observe(self, user_id: str, text: str) -> None:
-        patterns = [
-            (r"(?:eu )?(?:gosto|prefiro) de? (.+)", "preference"),
-            (r"(?:me chamo|meu nome é) (.+)", "display_name"),
-            (r"(?:responda|prefiro respostas) (mais curtas|curtas|mais detalhadas|detalhadas)", "response_style"),
-        ]
-        for pattern, kind in patterns:
-            match = re.search(pattern, text.strip(), flags=re.IGNORECASE)
-            if match:
-                content = match.group(0).strip().rstrip(".!?")[:240]
-                self.store.add_memory(user_id, kind, content, 0.8)
-                break
+    def observe(self, user_id: str, text: str) -> list[tuple[int, str]]:
+        return [self.semantic.remember(user_id, candidate) for candidate in self.extractor.extract(text)]
+
+    def retrieve(self, user_id: str, query: str, limit: int = 6) -> list[str]:
+        return self.semantic.retrieve(user_id, query, limit)
+
+    def clear_user(self, user_id: str) -> None:
+        self.semantic.delete_user(user_id)
 

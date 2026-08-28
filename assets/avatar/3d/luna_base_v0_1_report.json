@@ -1,0 +1,27 @@
+{
+  "character": "Luna",
+  "ai_generated": true,
+  "adult_character": true,
+  "declared_age": 25,
+  "stage": "generic_adult_base_v0_1",
+  "identity_status": "pending_reference_sculpt",
+  "blender_version": "5.2.1 LTS",
+  "mesh": "Luna_BaseBody",
+  "vertices": 19158,
+  "polygons": 18486,
+  "armature": "Luna_FullBody_Rig",
+  "bones": 163,
+  "finger_bones_detected": 38,
+  "hand_bones": {
+    "left": "wrist.L",
+    "right": "wrist.R"
+  },
+  "grip_anchors": [
+    "Luna_LeftHand_Grip",
+    "Luna_RightHand_Grip"
+  ],
+  "blend_file": "assets/avatar/3d/luna_base_v0_1.blend",
+  "glb_file": "assets/avatar/3d/luna_base_v0_1.glb",
+  "preview_file": "assets/avatar/3d/luna_base_v0_1_preview.png",
+  "vrm_status": "mapping_pending"
+}

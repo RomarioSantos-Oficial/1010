@@ -4,4 +4,11 @@ pydantic>=2.8,<3
 pydantic-settings>=2.4,<3
 PyYAML>=6,<7
 python-multipart>=0.0.9
-
+qdrant-client>=1.12,<2
+sentence-transformers>=3.3,<6
+truststore>=0.10,<1
+faster-whisper>=1.2,<2
+piper-tts>=1.4,<2
+sounddevice>=0.5,<1
+soundfile>=0.13,<1
+kokoro>=0.9.4,<1

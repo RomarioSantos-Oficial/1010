@@ -1,0 +1,32 @@
+{
+  "character": "Luna",
+  "ai_generated": true,
+  "adult_character": true,
+  "source_directory": "src/Modelo",
+  "curated_references": [
+    {"file": "luna (1).jpeg", "role": "three_quarter_body"},
+    {"file": "luna (40).jpeg", "role": "smiling_portrait"},
+    {"file": "luna (60).jpeg", "role": "front_portrait"},
+    {"file": "luna (80).jpeg", "role": "front_body"},
+    {"file": "luna (90).jpeg", "role": "full_body"}
+  ],
+  "avatar_2d": "assets/avatar/luna_sprite_v1_1.png",
+  "turntable_3d": "assets/identity/luna_turntable_v1.png",
+  "avatar_3d_status": "base_rigged_identity_pending",
+  "avatar_3d_base": {
+    "blend": "assets/avatar/3d/luna_base_v0_1.blend",
+    "glb": "assets/avatar/3d/luna_base_v0_1.glb",
+    "preview": "assets/avatar/3d/luna_base_v0_1_preview.png",
+    "vertices": 19158,
+    "bones": 163,
+    "finger_bones_detected": 38,
+    "grip_anchors": ["Luna_LeftHand_Grip", "Luna_RightHand_Grip"]
+  },
+  "avatar_3d_next_steps": [
+    "identity_sculpt",
+    "retopology",
+    "outfit_fitting",
+    "blendshapes",
+    "vrm_mapping_and_export"
+  ]
+}

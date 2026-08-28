@@ -1,8 +1,8 @@
+import ctypes
 import os
 import sys
-import ctypes
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 
 from .llm_provider import LLMProvider, Message
 

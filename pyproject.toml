@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "luna-persona-local"
-version = "0.1.0"
+version = "0.5.0"
 description = "Persona de IA local, persistente e extensivel"
 requires-python = ">=3.11"
 dependencies = [
@@ -13,6 +13,15 @@ dependencies = [
   "pydantic>=2.8,<3",
   "pydantic-settings>=2.4,<3",
   "PyYAML>=6,<7",
+  "python-multipart>=0.0.9",
+  "qdrant-client>=1.12,<2",
+  "sentence-transformers>=3.3,<6",
+  "truststore>=0.10,<1",
+  "faster-whisper>=1.2,<2",
+  "piper-tts>=1.4,<2",
+  "sounddevice>=0.5,<1",
+  "soundfile>=0.13,<1",
+  "kokoro>=0.9.4,<1",
 ]
 
 [tool.pytest.ini_options]
@@ -20,5 +29,24 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.setuptools.packages.find]
-include = ["api*", "brain*", "config*", "core*", "memory*", "persona*"]
+include = [
+  "adult_commerce*",
+  "api*",
+  "avatar*",
+  "brain*",
+  "commerce*",
+  "config*",
+  "core*",
+  "memory*",
+  "persona*",
+  "safety*",
+  "speech*",
+]
 
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+ignore = ["E501"]

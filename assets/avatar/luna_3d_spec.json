@@ -1,0 +1,44 @@
+{
+  "target_format": "VRM 1.0",
+  "current_formats": ["BLEND", "GLB"],
+  "status": "base_rigged_identity_pending",
+  "body": "full_body",
+  "identity": "luna",
+  "ai_generated": true,
+  "adult_character": true,
+  "declared_age": 25,
+  "base_assets": {
+    "blend": "assets/avatar/3d/luna_base_v0_1.blend",
+    "glb": "assets/avatar/3d/luna_base_v0_1.glb",
+    "preview": "assets/avatar/3d/luna_base_v0_1_preview.png",
+    "report": "assets/avatar/3d/luna_base_v0_1_report.json"
+  },
+  "rig": {
+    "humanoid": true,
+    "hands": true,
+    "finger_bones": true,
+    "feet": true,
+    "bone_count": 163,
+    "finger_bones_detected": 38,
+    "face_blendshapes": {
+      "status": "pending",
+      "planned": ["blink", "happy", "sad", "surprised", "mouth_open"]
+    }
+  },
+  "garment_slots": ["full_body", "upper_body", "lower_body", "swimwear", "lingerie", "shoes", "accessories"],
+  "product_interaction": {
+    "hand_grip_anchors": ["left_hand", "right_hand"],
+    "anchors_status": "implemented",
+    "adult_product_explanation": "age_gate_required"
+  },
+  "pipeline": {
+    "turntable": "complete",
+    "base_mesh": "complete",
+    "base_rig": "complete",
+    "identity_sculpt": "pending",
+    "retopology": "pending",
+    "outfit_fitting": "pending",
+    "blendshapes": "pending",
+    "vrm_mapping_and_export": "pending"
+  }
+}

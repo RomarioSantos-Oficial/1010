@@ -9,28 +9,42 @@
 <body>
   <main class="shell">
     <aside>
-      <div class="orb"><span>L</span></div>
+      <div class="avatar-stage" aria-label="Avatar 2D da Luna">
+        <div id="avatar" class="avatar-sprite" data-state="neutral"></div>
+        <span class="ai-label">Personagem criada por IA</span>
+      </div>
       <h1>Luna</h1>
-      <p class="sub">Personagem virtual de IA</p>
+      <p class="sub">Influenciadora virtual local</p>
       <div class="status"><i></i><span id="status">Conectando…</span></div>
+      <div class="services" aria-label="Serviços locais">
+        <span id="stt-status">STT · …</span>
+        <span id="tts-status">Voz · …</span>
+        <span id="avatar-status">Avatar · …</span>
+      </div>
       <section>
         <small>Privacidade</small>
         <p>Conversas e preferências ficam neste computador.</p>
         <button id="forget" class="secondary">Apagar minha memória</button>
+        <button id="adult-verify" class="secondary adult-verify">Confirmar acesso 18+</button>
       </section>
     </aside>
     <section class="chat">
-      <header><div><strong>Conversa local</strong><small id="provider"></small></div><span class="badge">V0.1</span></header>
+      <header>
+        <div><strong>Conversa local</strong><small id="provider"></small></div>
+        <label class="voice-switch"><input id="voice-enabled" type="checkbox"> voz feminina</label>
+        <span class="badge">V0.5</span>
+      </header>
       <div id="messages" class="messages" aria-live="polite">
-        <article class="assistant">Oi! Eu sou Luna, uma personagem virtual de IA. Como posso ajudar?</article>
+        <article class="assistant">Oi! Eu sou Luna, uma personagem virtual criada por IA. Podemos conversar por texto ou voz.</article>
       </div>
       <form id="form">
-        <textarea id="input" rows="1" maxlength="4000" placeholder="Digite uma mensagem…" required></textarea>
-        <button type="submit" aria-label="Enviar">➜</button>
+        <button id="mic" class="mic" type="button" aria-label="Iniciar gravação" title="Falar com Luna">🎙</button>
+        <textarea id="input" rows="1" maxlength="4000" placeholder="Digite ou use o microfone…" required></textarea>
+        <button class="send" type="submit" aria-label="Enviar">➜</button>
       </form>
+      <p id="voice-hint" class="voice-hint">A voz feminina é opcional e processada somente neste computador.</p>
     </section>
   </main>
   <script src="/static/app.js"></script>
 </body>
 </html>
-
