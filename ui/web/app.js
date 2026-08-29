@@ -13,6 +13,7 @@ function restoreAvatar(){setAvatar(visualForEmotion(currentEmotion))}
 async function loadHealth(){
   try{
     health=await fetch('/health').then(r=>r.json());
+    document.querySelector('#version').textContent=`V${health.version}`;
     document.querySelector('#status').textContent=health.model_ready?'Modelo local ativo':'Modo demonstração';
     document.querySelector('#provider').textContent=`Motor: ${health.llm_provider}`;
     document.querySelector('#stt-status').textContent=`STT · ${health.stt==='ok'?'ativo':'offline'}`;

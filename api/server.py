@@ -170,7 +170,7 @@ app.mount("/assets", StaticFiles(directory=ROOT / "assets"), name="assets")
 
 @app.get("/", include_in_schema=False)
 def index():
-    return FileResponse(WEB / "index.html")
+    return FileResponse(WEB / "index.html", headers={"Cache-Control": "no-store"})
 
 
 @app.get("/health")

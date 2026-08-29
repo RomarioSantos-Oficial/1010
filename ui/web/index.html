@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Luna IA Local</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/style.css?v=0.6.0">
 </head>
 <body>
   <main class="shell">
@@ -32,7 +32,7 @@
       <header>
         <div><strong>Conversa local</strong><small id="provider"></small></div>
         <label class="voice-switch"><input id="voice-enabled" type="checkbox"> voz feminina</label>
-        <span class="badge">V0.5</span>
+        <span id="version" class="badge">V0.6.0</span>
       </header>
       <div id="messages" class="messages" aria-live="polite">
         <article class="assistant">Oi! Eu sou Luna, uma personagem virtual criada por IA. Podemos conversar por texto ou voz.</article>
@@ -45,6 +45,6 @@
       <p id="voice-hint" class="voice-hint">A voz feminina é opcional e processada somente neste computador.</p>
     </section>
   </main>
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=0.6.0"></script>
 </body>
 </html>
