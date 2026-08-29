@@ -3,6 +3,13 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+UNAUTHORIZED_ACTION_MESSAGE = "Essa ação não é autorizada."
+INVALID_ACTION_ARGUMENTS_MESSAGE = "Os argumentos dessa ação são inválidos."
+INTERNAL_ACTION_ERROR_MESSAGES = frozenset({
+    UNAUTHORIZED_ACTION_MESSAGE,
+    INVALID_ACTION_ARGUMENTS_MESSAGE,
+})
+
 
 class ActionRequest(BaseModel):
     action: str = Field(pattern=r"^[a-z_]+$")
@@ -32,7 +39,7 @@ class ActionRouter:
             return ActionResult(
                 action=request.action,
                 success=False,
-                spoken_text="Essa ação não é autorizada.",
+                spoken_text=UNAUTHORIZED_ACTION_MESSAGE,
                 error_code="unauthorized_action",
             )
         try:
@@ -41,6 +48,6 @@ class ActionRouter:
             return ActionResult(
                 action=request.action,
                 success=False,
-                spoken_text="Os argumentos dessa ação são inválidos.",
+                spoken_text=INVALID_ACTION_ARGUMENTS_MESSAGE,
                 error_code="invalid_arguments",
             )

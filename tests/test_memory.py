@@ -26,6 +26,19 @@ def test_history_is_isolated_by_user(tmp_path):
     semantic.close()
 
 
+def test_internal_action_error_turns_are_excluded_from_context(tmp_path):
+    store, semantic, _ = make_memory(tmp_path)
+    store.add_message("ana", "user", "Meu estilo favorito é elegante.")
+    store.add_message("ana", "assistant", "Entendi sua preferência.")
+    store.add_message("ana", "user", "oi")
+    store.add_message("ana", "assistant", "Essa ação não é autorizada.")
+    assert store.history("ana") == [
+        {"role": "user", "content": "Meu estilo favorito é elegante."},
+        {"role": "assistant", "content": "Entendi sua preferência."},
+    ]
+    semantic.close()
+
+
 def test_sensitive_data_and_name_are_not_stored(tmp_path):
     store, semantic, memory = make_memory(tmp_path)
     memory.observe("ana", "Meu CPF é 123.456.789-00")

@@ -1,6 +1,6 @@
 import asyncio
 
-from brain.action_router import ActionRequest
+from brain.action_router import INTERNAL_ACTION_ERROR_MESSAGES, ActionRequest
 from brain.context_manager import ContextManager
 from brain.llm_provider import LLMProvider
 from brain.prompt_builder import PromptBuilder
@@ -61,7 +61,26 @@ class Orchestrator:
         messages = self.prompt_builder.build(text, memories, history, state, self.sessions.relationship(user_id))
         async with self._lock:
             answer = await asyncio.to_thread(self.llm.chat, messages)
-        result = self.validator.validate(answer)
+            result = self.validator.validate(answer)
+            if result.spoken_text in INTERNAL_ACTION_ERROR_MESSAGES:
+                repair_messages = [
+                    messages[0],
+                    {
+                        "role": "user",
+                        "content": (
+                            f"{text}\n/no_think\n"
+                            "Responda diretamente à mensagem como conversa normal. "
+                            "Não repita mensagens internas de erro e use action=null."
+                        ),
+                    },
+                ]
+                repaired = await asyncio.to_thread(self.llm.chat, repair_messages)
+                result = self.validator.validate(repaired)
+        if result.spoken_text in INTERNAL_ACTION_ERROR_MESSAGES:
+            result = ValidatedResponse(
+                spoken_text="Não consegui formular a resposta corretamente. Pode tentar novamente?",
+                emotion="neutral",
+            )
         if self.tools and result.action:
             tool_result = self.tools.execute_requested(
                 user_id, text, ActionRequest(action=result.action, action_args=result.action_args)

@@ -2,6 +2,7 @@ import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 
+from brain.action_router import INTERNAL_ACTION_ERROR_MESSAGES
 from brain.llm_provider import Message
 
 
@@ -78,8 +79,18 @@ class SQLiteStore:
 
     def history(self, user_id: str, limit: int = 16) -> list[Message]:
         with self.connect() as db:
-            rows = db.execute("SELECT role,content FROM messages WHERE user_id=? ORDER BY id DESC LIMIT ?", (user_id, limit)).fetchall()
-        return [{"role": row["role"], "content": row["content"]} for row in reversed(rows)]
+            rows = db.execute(
+                "SELECT role,content FROM messages WHERE user_id=? ORDER BY id DESC LIMIT ?",
+                (user_id, max(limit * 4, limit)),
+            ).fetchall()
+        clean_history: list[Message] = []
+        for row in reversed(rows):
+            if row["role"] == "assistant" and row["content"] in INTERNAL_ACTION_ERROR_MESSAGES:
+                if clean_history and clean_history[-1]["role"] == "user":
+                    clean_history.pop()
+                continue
+            clean_history.append({"role": row["role"], "content": row["content"]})
+        return clean_history[-limit:]
 
     def add_memory(self, user_id: str, memory_type: str, content: str, importance: float = 0.6, canonical_key: str | None = None, confidence: float = 0.8) -> int:
         with self.connect() as db:

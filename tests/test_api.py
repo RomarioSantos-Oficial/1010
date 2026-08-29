@@ -65,6 +65,36 @@ def test_invalid_automatic_tool_arguments_preserve_conversation(tmp_path, monkey
         assert payload["action_args"] == {}
 
 
+def test_internal_action_error_is_retried_without_poisoned_history(tmp_path, monkeypatch):
+    class RecoveringProvider:
+        name = "demo"
+
+        def __init__(self):
+            self.calls = 0
+
+        def chat(self, _messages):
+            self.calls += 1
+            if self.calls == 1:
+                return '{"spoken_text":"Essa ação não é autorizada.","action":null}'
+            return '{"spoken_text":"Olá! Como posso ajudar hoje?","action":null}'
+
+    monkeypatch.setattr(server.settings, "database_path", tmp_path / "test.db")
+    monkeypatch.setattr(server.settings, "qdrant_path", tmp_path / "qdrant")
+    monkeypatch.setattr(server.settings, "catalog_path", tmp_path / "catalog.db")
+    monkeypatch.setattr(server.settings, "llm_provider", "demo")
+    monkeypatch.setattr(server, "DemoProvider", RecoveringProvider)
+    monkeypatch.setattr(server, "SentenceTransformerEmbeddings", lambda _: TestEmbeddings())
+    with TestClient(server.app) as client:
+        server.app.state.store.add_message("teste", "user", "oi")
+        server.app.state.store.add_message("teste", "assistant", "Essa ação não é autorizada.")
+        response = client.post("/chat", json={"user_id": "teste", "text": "oi"})
+        payload = response.json()
+        assert response.status_code == 200
+        assert payload["spoken_text"] == "Olá! Como posso ajudar hoje?"
+        assert payload["action"] is None
+        assert server.app.state.provider.calls == 2
+
+
 def test_speech_and_avatar_endpoints(tmp_path, monkeypatch):
     class FakeSTT:
         name = "fake-stt"
