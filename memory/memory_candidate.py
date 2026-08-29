@@ -32,8 +32,7 @@ class MemoryCandidateExtractor:
         if shopping:
             return [shopping]
 
-        preference = self._product_preference(clean, normalized)
-        return [preference] if preference else []
+        return self._product_preferences(normalized)
 
     def _response_style(self, text: str) -> MemoryCandidate | None:
         if "resposta" not in text and not text.startswith("responda"):
@@ -67,23 +66,52 @@ class MemoryCandidateExtractor:
                 )
         return None
 
-    def _product_preference(self, original: str, text: str) -> MemoryCandidate | None:
+    def _product_preferences(self, text: str) -> list[MemoryCandidate]:
         signal = re.search(r"\b(?:gosto|prefiro|adoro|escolho)\b(?:\s+de)?\s+(.+)", text)
         if not signal:
-            return None
+            return []
         value = signal.group(1).strip()
         if len(value) < 3:
-            return None
-        colors = {"preto", "preta", "pretos", "pretas", "vermelho", "vermelha", "vermelhos", "vermelhas", "azul", "azuis", "branco", "branca", "brancos", "brancas"}
-        color = next((word.rstrip("s") for word in value.split() if word in colors), None)
+            return []
+        colors = {
+            "preto": "preto", "preta": "preto", "pretos": "preto", "pretas": "preto",
+            "vermelho": "vermelho", "vermelha": "vermelho",
+            "vermelhos": "vermelho", "vermelhas": "vermelho",
+            "azul": "azul", "azuis": "azul",
+            "branco": "branco", "branca": "branco", "brancos": "branco", "brancas": "branco",
+        }
+        color = next((colors[word] for word in value.split() if word in colors), None)
+        results: list[MemoryCandidate] = []
         if color:
-            return MemoryCandidate(
+            results.append(MemoryCandidate(
                 memory_type="product_preference", content=f"prefere produtos na cor {color}",
                 canonical_key="product_color", confidence=0.88, importance=0.76,
-            )
+            ))
+
+        garment_preferences = {
+            "vestidos longos": ("vestidos longos", "vestido longo"),
+            "vestidos curtos": ("vestidos curtos", "vestido curto"),
+            "moda praia": ("moda praia", "roupas de praia"),
+            "roupas intimas": ("roupas intimas", "roupa intima", "lingerie"),
+        }
+        garment = next(
+            (canonical for canonical, variants in garment_preferences.items() if any(item in value for item in variants)),
+            None,
+        )
+        if garment:
+            results.append(MemoryCandidate(
+                memory_type="product_preference",
+                content=f"prefere {garment}",
+                canonical_key="product_type",
+                confidence=0.88,
+                importance=0.76,
+            ))
+        if results:
+            return results
+
         stems = {word[:-1] if word.endswith("s") and len(word) > 4 else word for word in value.split()}
         canonical = "product_preference:" + "_".join(sorted(stems))[:90]
-        return MemoryCandidate(
+        return [MemoryCandidate(
             memory_type="product_preference", content=f"prefere {value}",
             canonical_key=canonical, confidence=0.84, importance=0.72,
-        )
+        )]

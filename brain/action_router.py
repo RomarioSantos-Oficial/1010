@@ -14,6 +14,7 @@ class ActionResult(BaseModel):
     success: bool
     data: dict[str, Any] = Field(default_factory=dict)
     spoken_text: str
+    error_code: str | None = None
 
 
 class ActionRouter:
@@ -28,8 +29,18 @@ class ActionRouter:
     def execute(self, request: ActionRequest) -> ActionResult:
         action = self._actions.get(request.action)
         if not action:
-            return ActionResult(action=request.action, success=False, spoken_text="Essa ação não é autorizada.")
+            return ActionResult(
+                action=request.action,
+                success=False,
+                spoken_text="Essa ação não é autorizada.",
+                error_code="unauthorized_action",
+            )
         try:
             return action(**request.action_args)
         except (TypeError, ValueError):
-            return ActionResult(action=request.action, success=False, spoken_text="Os argumentos dessa ação são inválidos.")
+            return ActionResult(
+                action=request.action,
+                success=False,
+                spoken_text="Os argumentos dessa ação são inválidos.",
+                error_code="invalid_arguments",
+            )

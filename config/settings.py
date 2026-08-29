@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     avatar_sprite_url: str = "/assets/avatar/luna_sprite_v1_1.png"
     history_limit: int = 16
     memory_limit: int = 6
+    obs_enabled: bool = False
+    obs_host: str = "127.0.0.1"
+    obs_port: int = 4455
+    obs_password: str = ""
+    live_queue_size: int = 200
+    live_duplicate_window_seconds: float = 30.0
     host: str = "127.0.0.1"
     port: int = 8000
 

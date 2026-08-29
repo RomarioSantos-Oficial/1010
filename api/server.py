@@ -24,6 +24,9 @@ from commerce.catalog import CatalogService
 from config.settings import ROOT, settings
 from core.logging import configure_logging
 from core.orchestrator import Orchestrator
+from live.chat_queue import LiveMessageQueue
+from live.live_agent import LiveAgent
+from live.obs_controller import OBSController, OBSUnavailable
 from memory.embeddings import SentenceTransformerEmbeddings
 from memory.memory_candidate import MemoryCandidateExtractor
 from memory.qdrant_store import QdrantMemoryStore
@@ -52,6 +55,16 @@ class AgeVerificationRequest(BaseModel):
 
 class SpeechSynthesisRequest(BaseModel):
     text: str = Field(min_length=1, max_length=1200)
+
+
+class LiveStartRequest(BaseModel):
+    connect_obs: bool = False
+
+
+class LiveCommentRequest(BaseModel):
+    platform: str = Field(default="local", min_length=1, max_length=40, pattern=r"^[\w.-]+$")
+    user_id: str = Field(min_length=1, max_length=80, pattern=r"^[\w.-]+$")
+    text: str = Field(min_length=1, max_length=500)
 
 
 def make_provider():
@@ -102,6 +115,19 @@ async def lifespan(app: FastAPI):
     catalog = CatalogService(settings.catalog_path)
     age_gate = AgeGate()
     safety = ContentSafetyPolicy(age_gate)
+    live_agent = LiveAgent(
+        safety,
+        OBSController(
+            host=settings.obs_host,
+            port=settings.obs_port,
+            password=settings.obs_password,
+            enabled=settings.obs_enabled,
+        ),
+        LiveMessageQueue(
+            max_size=settings.live_queue_size,
+            duplicate_window_seconds=settings.live_duplicate_window_seconds,
+        ),
+    )
     tools = CommerceToolRouter(catalog, age_gate)
     provider = make_provider()
     stt = FasterWhisperProvider(settings.stt_model_path, settings.stt_device, settings.stt_compute_type)
@@ -118,6 +144,7 @@ async def lifespan(app: FastAPI):
     app.state.stt = stt
     app.state.tts = tts
     app.state.avatar = avatar
+    app.state.live_agent = live_agent
     app.state.orchestrator = Orchestrator(
         provider, store, memory, PromptBuilder(persona), ResponseValidator(),
         ContextManager(settings.history_limit, settings.memory_limit),
@@ -128,13 +155,14 @@ async def lifespan(app: FastAPI):
         provider.name, stt.ready, tts.ready,
     )
     yield
+    live_agent.stop()
     semantic.close()
     close = getattr(provider, "close", None)
     if close:
         close()
 
 
-app = FastAPI(title="Luna IA Local", version="0.5.0", lifespan=lifespan)
+app = FastAPI(title="Luna IA Local", version="0.6.0", lifespan=lifespan)
 WEB = ROOT / "ui" / "web"
 app.mount("/static", StaticFiles(directory=WEB), name="static")
 app.mount("/assets", StaticFiles(directory=ROOT / "assets"), name="assets")
@@ -151,7 +179,7 @@ def health():
     llm_ok = app.state.provider.name != "demo"
     return {
         "status": "ok" if database_ok else "degraded",
-        "version": "0.5.0",
+        "version": "0.6.0",
         "persona": app.state.persona.name,
         "api": "ok", "llm": "ok" if llm_ok else "demo",
         "database": "ok" if database_ok else "error",
@@ -163,7 +191,9 @@ def health():
         "tts_voice_gender": getattr(app.state.tts, "voice_gender", "unknown"),
         "stt": "ok" if app.state.stt.ready else "offline",
         "avatar": "ok" if (ROOT / "assets" / "avatar" / "luna_sprite_v1_1.png").is_file() else "offline",
-        "comfyui": "offline", "obs": "offline",
+        "comfyui": "offline",
+        "obs": "online" if app.state.live_agent.obs.connected else "configured" if settings.obs_enabled else "offline",
+        "live": "running" if app.state.live_agent.running else "stopped",
         "llm_provider": app.state.provider.name, "model_ready": llm_ok,
     }
 
@@ -281,3 +311,50 @@ def get_avatar_manifest():
 @app.get("/avatar/3d/manifest")
 def get_avatar_3d_manifest():
     return full_body_3d_manifest()
+
+
+@app.get("/live/status")
+def live_status():
+    return app.state.live_agent.status()
+
+
+@app.post("/live/start")
+def live_start(request: LiveStartRequest):
+    try:
+        return app.state.live_agent.start(connect_obs=request.connect_obs)
+    except OBSUnavailable as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+
+
+@app.post("/live/stop")
+def live_stop():
+    return app.state.live_agent.stop()
+
+
+@app.post("/live/comments")
+def live_comment(request: LiveCommentRequest):
+    moderation, queued = app.state.live_agent.ingest(request.platform, request.user_id, request.text)
+    return {
+        "accepted": bool(queued and queued.accepted),
+        "code": queued.code if queued else moderation.code,
+        "message": queued.message.to_dict() if queued and queued.message else None,
+        "queue": app.state.live_agent.queue.stats(),
+    }
+
+
+@app.post("/live/process-next")
+async def live_process_next():
+    message = app.state.live_agent.next_message()
+    if not message:
+        return {"processed": False, "message": None, "response": None}
+    result = await app.state.orchestrator.process(message.scoped_user_id, message.text)
+    avatar_state = app.state.avatar.react(result.emotion)
+    return {
+        "processed": True,
+        "message": message.to_dict(),
+        "response": {
+            **result.model_dump(),
+            "provider": app.state.provider.name,
+            "avatar_state": avatar_state,
+        },
+    }

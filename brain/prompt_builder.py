@@ -47,7 +47,11 @@ REGRAS:
 
 FORMATO DE SAÍDA:
 Responda preferencialmente como JSON válido com spoken_text, emotion, gesture,
-action, action_args e memory_candidates. Nunca invente uma ação fora das ferramentas registradas.
+action, action_args e memory_candidates. Para conversa normal use action=null e
+action_args={{}}. As únicas ações permitidas são get_product, get_stock,
+get_product_guide, search_products e recommend_products. Nunca traduza nem invente
+nomes de ação. memory_candidates deve ser uma lista de objetos com memory_type,
+content, canonical_key, confidence e importance; use [] quando não houver memória.
 """
         clean_history = [message for message in history if message["role"] in {"user", "assistant"}]
         return [{"role": "system", "content": system}, *clean_history, {"role": "user", "content": f"{text}\n/no_think"}]

@@ -32,6 +32,35 @@ def test_rejects_invalid_user_id(tmp_path, monkeypatch):
         assert response.status_code == 422
 
 
+def test_invalid_automatic_tool_arguments_preserve_conversation(tmp_path, monkeypatch):
+    class InvalidArgsProvider:
+        name = "demo"
+
+        def chat(self, _messages):
+            return (
+                '{"spoken_text":"Vou lembrar que você prefere roupas azuis.",'
+                '"emotion":"happy","action":"recommend_products",'
+                '"action_args":{"color":"azul"},"memory_candidates":[]}'
+            )
+
+    monkeypatch.setattr(server.settings, "database_path", tmp_path / "test.db")
+    monkeypatch.setattr(server.settings, "qdrant_path", tmp_path / "qdrant")
+    monkeypatch.setattr(server.settings, "catalog_path", tmp_path / "catalog.db")
+    monkeypatch.setattr(server.settings, "llm_provider", "demo")
+    monkeypatch.setattr(server, "DemoProvider", InvalidArgsProvider)
+    monkeypatch.setattr(server, "SentenceTransformerEmbeddings", lambda _: TestEmbeddings())
+    with TestClient(server.app) as client:
+        response = client.post(
+            "/chat",
+            json={"user_id": "teste", "text": "Eu prefiro roupas azuis."},
+        )
+        payload = response.json()
+        assert response.status_code == 200
+        assert payload["spoken_text"] == "Vou lembrar que você prefere roupas azuis."
+        assert payload["action"] is None
+        assert payload["action_args"] == {}
+
+
 def test_speech_and_avatar_endpoints(tmp_path, monkeypatch):
     class FakeSTT:
         name = "fake-stt"
@@ -73,3 +102,32 @@ def test_speech_and_avatar_endpoints(tmp_path, monkeypatch):
         assert audio.status_code == 200 and audio.headers["content-type"] == "audio/wav"
         manifest = client.get("/avatar/manifest").json()
         assert manifest["ai_generated"] is True
+
+
+def test_local_live_queue_and_response(tmp_path, monkeypatch):
+    monkeypatch.setattr(server.settings, "database_path", tmp_path / "test.db")
+    monkeypatch.setattr(server.settings, "qdrant_path", tmp_path / "qdrant")
+    monkeypatch.setattr(server.settings, "catalog_path", tmp_path / "catalog.db")
+    monkeypatch.setattr(server.settings, "llm_provider", "demo")
+    monkeypatch.setattr(server.settings, "obs_enabled", False)
+    monkeypatch.setattr(server, "SentenceTransformerEmbeddings", lambda _: TestEmbeddings())
+    with TestClient(server.app) as client:
+        started = client.post("/live/start", json={"connect_obs": False})
+        assert started.status_code == 200
+        assert started.json()["running"] is True
+
+        queued = client.post(
+            "/live/comments",
+            json={"platform": "local", "user_id": "ana", "text": "Olá, Luna?"},
+        )
+        assert queued.status_code == 200
+        assert queued.json()["accepted"] is True
+
+        processed = client.post("/live/process-next")
+        payload = processed.json()
+        assert payload["processed"] is True
+        assert payload["message"]["user_id"] == "ana"
+        assert payload["response"]["spoken_text"]
+
+        stopped = client.post("/live/stop")
+        assert stopped.json()["running"] is False

@@ -1,4 +1,4 @@
-# Luna IA Local — V0.5
+# Luna IA Local — V0.6
 
 Projeto da Luna, uma influenciadora virtual adulta criada por IA para conversa
 local, lives, apresentação de produtos, moda e conteúdo audiovisual. A base segue
@@ -16,6 +16,7 @@ avatar para permitir evolução sem misturar responsabilidades.
 - voz feminina brasileira principal com Kokoro e transcrição local com faster-whisper;
 - interface web com avatar 2D, microfone, reprodução da voz e estados emocionais;
 - base 3D adulta completa em BLEND/GLB, rig com mãos, dedos, pés e âncoras de pegada;
+- modo de live local com fila priorizada, deduplicação, moderação e integração OBS configurável;
 - bloqueios anteriores ao LLM para menores, mortos, coerção, mutilação e instruções de homicídio.
 
 ## Início rápido no Windows
@@ -30,6 +31,8 @@ Copy-Item .env.example .env
 ```
 
 Abra <http://127.0.0.1:8000>. O servidor escuta somente em `127.0.0.1` por padrão.
+Se ele já estiver aberto, uma segunda execução apenas mostrará o endereço existente,
+sem tentar abrir novamente o mesmo armazenamento Qdrant.
 
 Os caminhos locais esperados no ambiente validado são:
 
@@ -72,6 +75,17 @@ blendshapes faciais, ajuste de roupas e mapeamento VRM 1.0 continuam pendentes.
 O script `scripts/build_luna_3d_base.py` reconstrói a base no Blender portátil com
 as extensões oficiais MPFB e VRM instaladas dentro de `tools/blender`.
 
+## Live local e OBS
+
+O modo local de live recebe comentários, remove duplicados, modera bloqueios graves
+e seleciona mensagens por prioridade. Ele pode funcionar como prévia sem OBS. Para
+controle de cenas, configure `OBS_ENABLED=true`, `OBS_HOST`, `OBS_PORT` e uma senha
+forte em `OBS_PASSWORD`; a senha fica somente no `.env`, que não é enviado ao Git.
+
+Cenas autorizadas: `LUNA_CHAT`, `LUNA_PRODUCT`, `LUNA_BREAK` e
+`LUNA_STUDIO_RESULT`. O OBS 32.0.1 foi detectado neste computador, mas a conexão real
+depende de abrir o OBS e ativar/configurar o servidor WebSocket local.
+
 ## Conteúdo adulto e segurança
 
 Narrativas eróticas fictícias e consensuais entre adultos e explicações de produtos
@@ -94,6 +108,10 @@ personagem adulta fictícia Luna; a verificação de idade não remove essas pro
 - `GET /avatar/state` — estado atual do avatar 2D;
 - `GET /avatar/manifest` — identidade e ativos;
 - `GET /avatar/3d/manifest` — capacidade e estágio do avatar 3D;
+- `GET /live/status` — estado da live, fila e conexão OBS;
+- `POST /live/start` e `POST /live/stop` — controla a sessão local;
+- `POST /live/comments` — recebe e prioriza comentários;
+- `POST /live/process-next` — seleciona e responde a próxima mensagem;
 - `GET /memory/{user_id}` e `DELETE /memory/{user_id}` — memória do usuário;
 - `GET /docs` — documentação interativa.
 
@@ -108,7 +126,7 @@ personagem adulta fictícia Luna; a verificação de idade não remove essas pro
 
 ## Próximas etapas do guia
 
-O núcleo, memória, comércio, voz e avatar 2D estão funcionais. A próxima fase visual
-é transformar a base 3D no corpo/rosto definitivo da Luna, criar roupas ajustáveis e
-blendshapes. Depois vêm composição de vídeo, sincronização labial avançada, OBS,
-automação de lives e provador/geração visual por ComfyUI.
+O núcleo, memória, comércio, voz, avatar 2D e prévia local de live estão funcionais.
+A conexão real ao OBS ainda precisa da senha/configuração local e das quatro cenas.
+A próxima fase visual é transformar a base 3D no corpo/rosto definitivo da Luna,
+criar roupas ajustáveis e blendshapes; depois vêm ComfyUI, provador virtual e vídeo.

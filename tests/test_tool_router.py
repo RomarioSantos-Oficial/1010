@@ -21,7 +21,19 @@ def test_invalid_tool_is_refused(tmp_path):
     tools, _ = make_tools(tmp_path)
     result = tools.execute_requested("ana", "faça isso", ActionRequest(action="run_system_command", action_args={"command": "x"}))
     assert not result.success
+    assert result.error_code == "unauthorized_action"
     assert "não é autorizada" in result.spoken_text
+
+
+def test_invalid_tool_arguments_are_identified(tmp_path):
+    tools, _ = make_tools(tmp_path)
+    result = tools.execute_requested(
+        "ana",
+        "Eu prefiro roupas azuis.",
+        ActionRequest(action="recommend_products", action_args={"color": "azul"}),
+    )
+    assert not result.success
+    assert result.error_code == "invalid_arguments"
 
 
 def test_adult_catalog_requires_age_gate(tmp_path):

@@ -66,8 +66,12 @@ class Orchestrator:
             tool_result = self.tools.execute_requested(
                 user_id, text, ActionRequest(action=result.action, action_args=result.action_args)
             )
-            result.spoken_text = tool_result.spoken_text
-            result.action_args = tool_result.data
+            if tool_result.error_code == "invalid_arguments":
+                result.action = None
+                result.action_args = {}
+            else:
+                result.spoken_text = tool_result.spoken_text
+                result.action_args = tool_result.data
         self._observe(user_id, text, result)
         return result
 
