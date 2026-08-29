@@ -6,13 +6,13 @@ from pydantic import BaseModel, Field
 
 class ActionRequest(BaseModel):
     action: str = Field(pattern=r"^[a-z_]+$")
-    action_args: dict[str, Any] = {}
+    action_args: dict[str, Any] = Field(default_factory=dict)
 
 
 class ActionResult(BaseModel):
     action: str
     success: bool
-    data: dict[str, Any] = {}
+    data: dict[str, Any] = Field(default_factory=dict)
     spoken_text: str
 
 

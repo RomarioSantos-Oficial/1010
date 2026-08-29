@@ -1,10 +1,16 @@
 import json
+import sys
+from pathlib import Path
 from time import perf_counter
 
-from config.settings import ROOT, settings
-from speech.faster_whisper_provider import FasterWhisperProvider
-from speech.kokoro_provider import KokoroProvider
-from speech.piper_provider import PiperProvider
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from config.settings import ROOT, settings  # noqa: E402
+from speech.faster_whisper_provider import FasterWhisperProvider  # noqa: E402
+from speech.kokoro_provider import KokoroProvider  # noqa: E402
+from speech.piper_provider import PiperProvider  # noqa: E402
 
 
 def main() -> None:

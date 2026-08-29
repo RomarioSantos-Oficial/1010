@@ -13,7 +13,7 @@ avatar para permitir evolução sem misturar responsabilidades.
 - catálogo consultado por ferramentas determinísticas, com preço e estoque reais;
 - categorias de moda, moda praia, lingerie, calçados, eletrônicos e bem-estar adulto;
 - verificação de maioridade para produtos e narrativas adultas;
-- fala em português com Piper e transcrição local com faster-whisper;
+- voz feminina brasileira principal com Kokoro e transcrição local com faster-whisper;
 - interface web com avatar 2D, microfone, reprodução da voz e estados emocionais;
 - base 3D adulta completa em BLEND/GLB, rig com mãos, dedos, pés e âncoras de pegada;
 - bloqueios anteriores ao LLM para menores, mortos, coerção, mutilação e instruções de homicídio.
@@ -35,7 +35,8 @@ Os caminhos locais esperados no ambiente validado são:
 
 - LLM: `models/llm/model.gguf`;
 - STT: `models/stt/faster-whisper-small`;
-- TTS: `models/tts/pt_BR-faber-medium.onnx`;
+- TTS feminino principal: `models/tts/kokoro-82m` (`pf_dora`);
+- TTS de fallback: `models/tts/pt_BR-faber-medium.onnx`;
 - segmentação humana: `models/vision/rembg/models/u2net_human_seg/u2net_human_seg.onnx`.
 
 Sem o LLM, o sistema pode iniciar com `LLM_PROVIDER=demo` para validar API e interface.
@@ -43,8 +44,10 @@ Sem o LLM, o sistema pode iniciar com `LLM_PROVIDER=demo` para validar API e int
 ## Voz local
 
 O botão do microfone grava no navegador e envia o áudio para o faster-whisper. A
-resposta da Luna pode ser sintetizada pelo Piper. O microfone fica bloqueado durante
-a reprodução para reduzir realimentação e eco.
+resposta falada é opcional e começa desativada na interface. Quando o usuário a
+ativa, a voz principal é a brasileira feminina `pf_dora`, do Kokoro; o Piper fica
+disponível apenas como fallback configurável. O microfone fica bloqueado durante a
+reprodução para reduzir realimentação e eco.
 
 Teste real de ida e volta TTS → STT:
 

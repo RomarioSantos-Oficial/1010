@@ -21,5 +21,12 @@ def test_avatar_controller_and_manifest():
     assert set(manifest["states"]) == {"neutral", "blink", "speaking", "happy"}
     manifest_3d = full_body_3d_manifest()
     assert manifest_3d["body"] == "full_body"
+    assert manifest_3d["status"] == "base_rigged_identity_pending"
+    assert manifest_3d["current_formats"] == ["BLEND", "GLB"]
+    assert manifest_3d["target_format"] == "VRM 1.0"
     assert {"swimwear", "lingerie", "shoes"}.issubset(manifest_3d["garment_slots"])
     assert manifest_3d["rig"]["finger_bones"] is True
+    assert manifest_3d["rig"]["bone_count"] == 163
+    assert manifest_3d["rig"]["face_blendshapes"]["status"] == "pending"
+    assert manifest_3d["pipeline"]["base_rig"] == "complete"
+    assert manifest_3d["pipeline"]["vrm_mapping_and_export"] == "pending"
